@@ -1,3 +1,3 @@
 Ну поносный асистент для челов которым скучно, но она может управлять вашей системой :) немножко
 
-by kasper studios
+by [kasper studios](https://discord.gg/dYStejMq6d)
