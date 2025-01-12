@@ -97,8 +97,6 @@ class KaryaDiscordBot(commands.Bot):
 
 def connectBot(token: str) -> None:
     if discord.__author__.lower() == 'dolfies':
-        intents = discord.Intents.default()
-        intents.message_content = True
         bot = KaryaDiscordBot(command_prefix=">", self_bot=True)
         @bot.command()
         async def stop(self, ctx):
