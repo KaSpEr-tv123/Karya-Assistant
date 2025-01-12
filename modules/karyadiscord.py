@@ -35,14 +35,14 @@ class KaryaDiscord(commands.Cog):
                         "discord"
                     )
 
-                if len(response) > 2000:
-                    response = response[:2000]
+                    if len(response) > 2000:
+                        response = response[:2000]
 
-                r = await r.edit(content='__Karya Selfbot__: **Ответ Кари**: {}'.format(question, response))
-                await CommandCompiler.compile(response, KaryaContext(message, r, self.bot), "discord")
+                    r = await r.edit(content='__Karya Selfbot__: **Ответ Кари**: {}'.format(question, response))
+                    await CommandCompiler.compile(response, KaryaContext(message, r, self.bot), "discord")
 
-            except Exception as e:
-                await message.edit(content='__Karya Selfbot__: **``{}``**\nЧто то пошло не так: ```py\n{}\n```'.format(question, traceback.format_exc()))
+                except Exception as e:
+                    await message.edit(content='__Karya Selfbot__: **``{}``**\nЧто то пошло не так: ```py\n{}\n```'.format(question, traceback.format_exc()))
             return
             
         if message.author.bot:
