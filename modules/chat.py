@@ -1,15 +1,22 @@
-import os, requests
-from kasperdb import db
-import re, json
-import disnake
-from .types import KaryaCommands
+from __future__ import annotations
+
+import json
+import os
+import requests
+import re
+import typing
+
+import discord
 from groq import Groq
 import groq
+from kasperdb import db
 
-def count_tokens(text, model="llama-3.3-70b-versatile"):
+from .types import KaryaCommands
+
+def count_tokens(text: str, model: str = "llama-3.3-70b-versatile") -> int:
     return len(text.split())
 
-def trim_log_file(file_path, max_tokens=500, model="llama-3.3-70b-versatile"):
+def trim_log_file(file_path: str, max_tokens: int = 500, model="llama-3.3-70b-versatile"):
     with open(file_path, "r", encoding="utf-8") as file:
         lines = file.readlines()
 
@@ -54,7 +61,7 @@ def get_memory():
     except FileNotFoundError:
         return ""
 
-def karya_request(username: str, user_prompt: str, commands: KaryaCommands, message: disnake.Message = None, type="chat"):
+def karya_request(username: str, user_prompt: str, commands: KaryaCommands, message: typing.Optional[discord.Message] = None, type="chat"):
     if not os.path.exists("database/chat.log"):
         open("database/chat.log", "w", encoding="utf-8").close()
     
