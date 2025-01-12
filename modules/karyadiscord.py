@@ -98,7 +98,7 @@ def connectBot(token: str) -> None:
     if discord.__author__.lower() == 'dolfies':
         bot = KaryaDiscordBot(command_prefix=">", self_bot=True)
         @bot.command()
-        async def stop(self, ctx):
+        async def stop(ctx):
             await ctx.send(content='__Karya Selfbot__: Селфбот Каря остановлен.')
             await ctx.bot.close()
 
@@ -110,7 +110,7 @@ def connectBot(token: str) -> None:
         bot = KaryaDiscordBot(command_prefix=">", intents=intents, activity=discord.Game('Karya Discord Assistant'), status=discord.Status.idle)
         @bot.command()
         @commands.is_owner()
-        async def stop(self, ctx):
+        async def stop(ctx):
             await ctx.send(embed=Embed(description="Каря остановлена", color=Color.red()))
             await ctx.bot.close()
         thread = Thread(target=bot.run, args=(token,))
