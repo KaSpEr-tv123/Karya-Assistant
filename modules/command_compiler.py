@@ -11,9 +11,15 @@ import discord
 from googletrans import Translator
 from kasperdb import db
 import requests
+from urllib.parse import quote
 
 from .types import KaryaContext, KaryaCommands, KaryaCommand
 
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+        
 def set_settings(temperature) -> None:
     data = db.get("database/settings")
     data["temperature"] = temperature
@@ -38,13 +44,17 @@ class CommandCompiler:
             app.chat_area.setTextColor(QColor(255, 165, 0))
             app.chat_area.append(f"Система: Вызвана команда {command_name} \nаргументы: {args}\nрезультат: {result}\n")
         else:
-            embeds = app.botmsg.embeds or [] 
-            embeds.append(discord.Embed(
-                title="Система",
-                description=f"Вызвана команда {command_name} \nаргументы: {args}\nрезультат: {result}\n",
-                color=discord.Color.orange()
-            ))
-            await app.edit(embeds=embeds)
+            
+            if discord.__author__.lower() == 'dolfies':
+                app.botmsg = await app.edit(app.botmsg.content + '\n__Karya Selfbot__: Вызвана команда {}, с аргументами: ``{}``, с результатом: ``{}``\n'.format(command_name, args, result))
+            else:
+                embeds = app.botmsg.embeds or []
+                embeds.append(discord.Embed(
+                    title="Система",
+                    description=f"Вызвана команда {command_name} \nаргументы: {args}\nрезультат: {result}\n",
+                    color=discord.Color.orange()
+                ))
+                app.botmsg = await app.edit(embeds=embeds)
         with open("database/chat.log", "a", encoding="utf-8") as f:
             f.write(f"\nСистема: 'Вызвана команда {command_name} с аргументами: {args}. результат: {result}\n'")  # Логируем команду
 
@@ -94,9 +104,13 @@ class CommandCompiler:
                 if os.path.exists(image_path):
                     os.remove(image_path)
             else:
-                emb = discord.Embed(title="Изображение", description=description, color=discord.Color.orange())
-                emb.set_image(url=image_source)
-                await app.channel.send(embed=emb)
+                if discord.__author__.lower() == 'dolfies':
+                    await app.channel.send('__Karya Selfbot__: ' + image_source)
+                else:
+                    emb = discord.Embed(title="Изображение", description=description, color=discord.Color.orange())
+                    emb.set_image(url=image_source)
+                    await app.channel.send(embed=emb)
+                    
                 with open("database/chat.log", "a", encoding="utf-8") as f:
                     f.write(f"\nСистема: Изображение добавлено. Описание: {description}, Источник: {image_source}\n")
 
@@ -104,6 +118,8 @@ class CommandCompiler:
             if type == "chat":
                 app.chat_area.setTextColor(QColor(255, 0, 0))
                 app.chat_area.append(f"Ошибка при отправке изображения: {e}")
+            elif discord.__author__.lower() == 'dolfies':
+                await app.channel.send('__Karya Selfbot__: **Произошла ошибка при отправке изображения: **\n```py\n{}\n```'.format(e))
             else:
                 await app.channel.send(embed=discord.Embed(title="Ошибка", description=f"Произошла ошибка при отправке изображения: {e}", color=0xff0000))
 
@@ -129,6 +145,9 @@ class CommandCompiler:
                     else:
                         await CommandCompiler.send(app, command_name, args, "Не выполнена", type)
 
+_EMBED_URL = 'https://webembed-sb.onrender.com/embed'
+_EMBED_HIDDEN_CHARTER = '||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||'
+
 @CommandCompiler.register_command("createMessagebox", description="Создает окно сообщения, а в дискорде эмбед", args="текст")
 async def create_messagebox(args, app, type):
     if type == "chat":
@@ -140,7 +159,13 @@ async def create_messagebox(args, app, type):
         msg.exec_()
         await CommandCompiler.send(app, "createMessagebox", args)
     else:
-        await app.channel.send(embed=discord.Embed(title="Особое Сообщение от Кари в системе", description=args, color=0x00ff00))
+        if discord.__author__.lower() == 'dolfies':
+            await app.channel.send(_EMBED_HIDDEN_CHARTER + _EMBED_URL + '?title={}&description={}&color=%2300ff00'.format(
+                quote('__Karya Selfbot__: Особое сообщение от Кари в системе!'),
+                quote(args),
+            ))
+        else:
+            await app.channel.send(embed=discord.Embed(title="Особое Сообщение от Кари в системе", description=args, color=0x00ff00))
         await CommandCompiler.send(app, "createMessagebox", args, type="discord")
 
 @CommandCompiler.register_command("setMode", description="Устанавливает режим работы, 1 - точный, 2 - обычный, 3 - креативный", args="цифра")
@@ -400,9 +425,7 @@ async def ban_user(args, app: typing.Union[QWidget, KaryaContext], type):
     
     try:
         user_id, reason = [arg.strip() for arg in args.split(";")]
-        user = await app.guild.fetch_member(int(user_id))
-        
-        await user.ban(reason=reason)
+        await app.guild.ban(discord.Object(int(user_id)), reason=reason)
         await CommandCompiler.send(app, "banUser", args, f"Пользователь {user} успешно забанен по причине: {reason}", type)
     except Exception as e:
         await CommandCompiler.send(app, "banUser", args, f"Произошла ошибка: {e}", type)
@@ -415,7 +438,7 @@ async def unban_user(args, app: typing.Union[QWidget, KaryaContext], type):
     try:
         user_id, reason = [arg.strip() for arg in args.split(";")]
         
-        await app.guild.unban(int(user_id), reason=reason)
+        await app.guild.unban(discord.Object(int(user_id)), reason=reason)
         await CommandCompiler.send(app, "unbanUser", args, f"Пользователь {user_id} успешно разбанен по причине: {reason}", type)
     except Exception as e:
         await CommandCompiler.send(app, "unbanUser", args, f"Произошла ошибка: {e}", type)
@@ -427,8 +450,7 @@ async def delete_message(args, app: typing.Union[QWidget, KaryaContext], type):
     
     try:
         message_id = args.strip()
-        message = await app.channel.fetch_message(int(message_id))
-        await message.delete()
+        await app.channel.get_partial_message(int(message_id)).delete()
         await CommandCompiler.send(app, "deleteMessage", args, f"Сообщение {message_id} успешно удалено.", type)
     except Exception as e:
         await CommandCompiler.send(app, "deleteMessage", args, f"Произошла ошибка: {e}", type)
@@ -440,7 +462,11 @@ async def assign_role(args, app: typing.Union[QWidget, KaryaContext], type):
     
     try:
         user_id, role_id = [arg.strip() for arg in args.split(";")]
-        user = await app.guild.fetch_member(int(user_id))
+        try:
+            user = app.guild.get_member(int(user_id)) or (await app.guild.query_members(user_ids=[int(user_id)]))[0]
+        except:
+            await CommandCompiler.send(app, "giveRole", args, f"Пользователь с ID {user_id} не найден.", type)
+            return
         role = discord.utils.get(app.guild.roles, id=int(role_id))
         
         if role:
@@ -458,7 +484,11 @@ async def unassign_role(args, app: typing.Union[QWidget, KaryaContext], type):
     
     try:
         user_id, role_id = [arg.strip() for arg in args.split(";")]
-        user = await app.guild.fetch_member(int(user_id))
+        try:
+            user = app.guild.get_member(int(user_id)) or (await app.guild.query_members(user_ids=[int(user_id)]))[0]
+        except:
+            await CommandCompiler.send(app, "takeRole", args, f"Пользователь с ID {user_id} не найден.", type)
+            return
         role = discord.utils.get(app.guild.roles, id=int(role_id))
         
         if role:
@@ -552,15 +582,16 @@ async def edit_role(args, app: typing.Union[QWidget, KaryaContext], type):
         
         if not role:
             raise ValueError("Роль с таким ID не найдена.")
-        
+
+        kwargs = {}
         if new_name:
-            await role.edit(name=new_name)
-        
+            kwargs['name'] = new_name
         if color:
-            await role.edit(colour=color)
-        
+            kwargs['color'] = color
         if permissions:
-            await role.edit(**permissions)
+            kwargs['permissions'] = discord.Permissions(**permissions)
+        if kwargs:
+            await role.edit(**kwargs)
 
         return await CommandCompiler.send(app, "editRole", args, f"Роль с ID {role_id} успешно изменена.", type)
     
@@ -580,8 +611,13 @@ async def give_role_for_all(args, app: typing.Union[QWidget, KaryaContext], type
         role = app.guild.get_role(role_id)
         if not role:
             return await CommandCompiler.send(app, "giveRoleForAll", args, f"Роль с ID {role_id} не была найдена.", type)
-        for member in app.guild.members:
-            await member.add_roles(role)
+        if discord.__author__.lower() == 'dolfies':
+            members = await app.guild.fetch_members()
+            for chunk in chunks(members, 30):
+                await role.add_members(chunk)
+        else:
+            for member in app.guild.members:
+                await member.add_roles(role)
         return await CommandCompiler.send(app, "giveRoleForAll", args, f"Роль с ID {role_id} была успешно выдана всем участникам сервера.", type)
     except Exception as e:
         return await CommandCompiler.send(app, "giveRoleForAll", args, f"Произошла ошибка: {str(e)}", type)    
