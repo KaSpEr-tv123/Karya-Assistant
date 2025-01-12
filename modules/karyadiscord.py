@@ -18,12 +18,11 @@ class KaryaDiscord(commands.Cog):
                 return
             # selfbot support
             if message.content.lower().startswith('каря'):
+                question = message.content[5:].lstrip(', ')
+                if not question:
+                    return
+                r = await message.edit(content='__Karya Selfbot__: **``{}``**\nКаря думает...'.format(question))            
                 try:
-                    question = message.content[5:].lstrip(', ')
-                    if not question:
-                        return
-                    r = await message.reply(content='__Karya Selfbot__: **``{}``**\nКаря думает...'.format(question))
-             
                     response = karya_request(
                         f"(Сообщение из Discord, user ID: {message.author.id}, "
                         f"channel ID: {message.channel.id}, guild ID: {message.guild.id}, "
@@ -42,7 +41,7 @@ class KaryaDiscord(commands.Cog):
                     await CommandCompiler.compile(response, KaryaContext(message, r, self.bot), "discord")
 
                 except Exception as e:
-                    await message.edit(content='__Karya Selfbot__: **``{}``**\nЧто то пошло не так: ```py\n{}\n```'.format(question, traceback.format_exc()))
+                    await r.edit(content='__Karya Selfbot__: **``{}``**\nЧто то пошло не так: ```py\n{}\n```'.format(question, traceback.format_exc()))
             return
             
         if message.author.bot:
