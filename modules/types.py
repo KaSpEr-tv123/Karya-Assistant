@@ -1,8 +1,8 @@
-import disnake
-from disnake.ext import commands
+import discord
+from discord.ext import commands
 
 class KaryaContext():
-    def __init__(self, message: disnake.Message, botmsg: disnake.Message, bot: commands.Bot):
+    def __init__(self, message: discord.Message, botmsg: discord.Message, bot: commands.Bot):
         self.message = message
         self.botmsg = botmsg
         self.bot = bot
