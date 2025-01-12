@@ -38,7 +38,7 @@ class KaryaDiscord(commands.Cog):
                         response = response[:2000]
 
                     r = await r.edit(content='__Karya Selfbot__: **Вопрос**: **``{}``**. **Ответ Кари**: {}'.format(question, response))
-                    await CommandCompiler.compile(response, KaryaContext(message, r, self.bot), "discord")
+                    await CommandCompiler.compile(question, KaryaContext(message, r, self.bot), "discord")
 
                 except Exception as e:
                     await r.edit(content='__Karya Selfbot__: **``{}``**\nЧто то пошло не так: ```py\n{}\n```'.format(question, traceback.format_exc()))
